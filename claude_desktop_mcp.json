@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "mcp-toolkit-gateway": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "-v",
+        "C:\\Users\\Nanna\\.docker\\mcp:/mcp",
+        "docker/mcp-gateway",
+        "--catalog=/mcp/catalogs/docker-mcp.yaml",
+        "--catalog=/mcp/catalogs/mycustomcatalog.yaml",
+        "--config=/mcp/config.yaml",
+        "--registry=/mcp/registry.yaml",
+        "--tools-config=/mcp/tools.yaml",
+        "--transport=stdio"
+      ]
+    },
+    "dice-roller": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "dice-mcp-server:latest"
+      ]
+    }
+  }
+}
