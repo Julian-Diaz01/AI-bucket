@@ -1,0 +1,11 @@
+# Environment variables
+.env
+
+# Backup files
+*.sql
+*.tar.gz
+*.zip
+
+# Logs
+*.log
+
