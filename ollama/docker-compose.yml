@@ -3,15 +3,20 @@ version: '3.8'
 services:
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama-gpt-oss
+    container_name: ${CONTAINER_NAME:-ollama-gpt-oss}
     ports:
-      - "11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     volumes:
-      - ollama_data:/root/.ollama
+      - ${OLLAMA_MODELS_PATH:-D:\.ollama}:/root/.ollama
     environment:
-      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_HOST=${OLLAMA_HOST:-0.0.0.0:11434}
     restart: unless-stopped
-
-volumes:
-  ollama_data:
+    deploy:
+      resources:
+        limits:
+          memory: ${MEMORY_LIMIT:-32G}
+          cpus: '${CPU_LIMIT:-8}'
+        reservations:
+          memory: ${MEMORY_RESERVATION:-8G}
+          cpus: '${CPU_RESERVATION:-2}'
 

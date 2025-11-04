@@ -1,0 +1,18 @@
+[wsl2]
+# Memory limit for WSL 2 (in GB)
+# Set to at least 16GB for gpt-oss:20b model, 32GB recommended
+memory=32GB
+
+# Number of processors to allocate to WSL 2
+# Leave commented to use all available cores, or specify a number
+processors=8
+
+# Swap space (in GB) - optional, set to 0 to disable swap
+swap=8GB
+
+# Page reporting - set to true to enable
+pageReporting=true
+
+# Nested virtualization - set to true if you need nested virtualization
+nestedVirtualization=false
+
