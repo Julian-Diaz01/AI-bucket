@@ -5,26 +5,25 @@ from dotenv import load_dotenv
 from contextlib import AsyncExitStack
 
 from mcp_client import MCPClient
-from core.claude import Claude
+from core.gemini import Gemini
 
 from core.cli_chat import CliChat
 from core.cli import CliApp
 
 load_dotenv()
 
-# Anthropic Config
-claude_model = os.getenv("CLAUDE_MODEL", "")
-anthropic_api_key = os.getenv("ANTHROPIC_API_KEY", "")
+# Gemini Config
+gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
+gemini_api_key = os.getenv("GEMINI_API_KEY", "")
 
 
-assert claude_model, "Error: CLAUDE_MODEL cannot be empty. Update .env"
-assert anthropic_api_key, (
-    "Error: ANTHROPIC_API_KEY cannot be empty. Update .env"
+assert gemini_api_key, (
+    "Error: GEMINI_API_KEY cannot be empty. Update .env"
 )
 
 
 async def main():
-    claude_service = Claude(model=claude_model)
+    gemini_service = Gemini(model=gemini_model, api_key=gemini_api_key)
 
     server_scripts = sys.argv[1:]
     clients = {}
@@ -51,12 +50,18 @@ async def main():
         chat = CliChat(
             doc_client=doc_client,
             clients=clients,
-            claude_service=claude_service,
+            gemini_service=gemini_service,
         )
 
         cli = CliApp(chat)
-        await cli.initialize()
-        await cli.run()
+        try:
+            await cli.initialize()
+            await cli.run()
+        except Exception as e:
+            print(f"\n❌ Fatal error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise
 
 
 if __name__ == "__main__":
