@@ -204,7 +204,12 @@ class CliApp:
                     continue
 
                 response = await self.agent.run(user_input)
-                print(f"\nResponse:\n{response}")
+                print(f"\n{response}\n")
 
             except KeyboardInterrupt:
+                print("\n\nExiting...")
                 break
+            except Exception as e:
+                print(f"\n❌ Unexpected error: {str(e)}\n")
+                import traceback
+                traceback.print_exc()

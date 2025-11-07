@@ -1,9 +1,8 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 from mcp.types import Prompt, PromptMessage
-from anthropic.types import MessageParam
 
 from core.chat import Chat
-from core.claude import Claude
+from core.gemini import Gemini
 from mcp_client import MCPClient
 
 
@@ -12,9 +11,9 @@ class CliChat(Chat):
         self,
         doc_client: MCPClient,
         clients: dict[str, MCPClient],
-        claude_service: Claude,
+        gemini_service: Gemini,
     ):
-        super().__init__(clients=clients, claude_service=claude_service)
+        super().__init__(clients=clients, gemini_service=gemini_service)
 
         self.doc_client: MCPClient = doc_client
 
@@ -86,15 +85,17 @@ class CliChat(Chat):
         Don't refer to or mention the provided context in any way - just use it to inform your answer.
         """
 
-        self.messages.append({"role": "user", "content": prompt})
+        self.messages.append({"role": "user", "parts": [{"text": prompt}]})
 
 
 def convert_prompt_message_to_message_param(
     prompt_message: "PromptMessage",
-) -> MessageParam:
-    role = "user" if prompt_message.role == "user" else "assistant"
+) -> Dict[str, Any]:
+    """Convert MCP prompt message to Gemini message format."""
+    role = "user" if prompt_message.role == "user" else "model"
 
     content = prompt_message.content
+    parts = []
 
     # Check if content is a dict-like object with a "type" field
     if isinstance(content, dict) or hasattr(content, "__dict__"):
@@ -109,10 +110,9 @@ def convert_prompt_message_to_message_param(
                 if isinstance(content, dict)
                 else getattr(content, "text", "")
             )
-            return {"role": role, "content": content_text}
+            parts.append({"text": content_text})
 
-    if isinstance(content, list):
-        text_blocks = []
+    elif isinstance(content, list):
         for item in content:
             # Check if item is a dict-like object with a "type" field
             if isinstance(item, dict) or hasattr(item, "__dict__"):
@@ -127,17 +127,19 @@ def convert_prompt_message_to_message_param(
                         if isinstance(item, dict)
                         else getattr(item, "text", "")
                     )
-                    text_blocks.append({"type": "text", "text": item_text})
+                    parts.append({"text": item_text})
+    elif isinstance(content, str):
+        parts.append({"text": content})
 
-        if text_blocks:
-            return {"role": role, "content": text_blocks}
+    if not parts:
+        parts.append({"text": ""})
 
-    return {"role": role, "content": ""}
+    return {"role": role, "parts": parts}
 
 
 def convert_prompt_messages_to_message_params(
     prompt_messages: List[PromptMessage],
-) -> List[MessageParam]:
+) -> List[Dict[str, Any]]:
     return [
         convert_prompt_message_to_message_param(msg) for msg in prompt_messages
     ]
